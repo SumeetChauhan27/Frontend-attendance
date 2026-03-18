@@ -1,0 +1,441 @@
+/* ============================================
+   QR Attendance Stepper Page
+   ============================================ */
+
+.attend-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  background:
+    radial-gradient(circle at 15% 20%, rgba(94, 96, 130, 0.35) 0%, transparent 30%),
+    radial-gradient(circle at 85% 15%, rgba(113, 115, 153, 0.28) 0%, transparent 28%),
+    radial-gradient(circle at 50% 90%, rgba(74, 75, 106, 0.3) 0%, transparent 35%),
+    linear-gradient(160deg, #0f1016 0%, #141621 48%, #191b27 100%);
+  color: #fff;
+}
+
+.attend-container {
+  width: min(36rem, 100%);
+  animation: attend-fade-in 350ms ease-out;
+}
+
+@keyframes attend-fade-in {
+  from { opacity: 0; transform: translateY(0.75rem); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.attend-header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.attend-logo {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 3.5rem;
+  height: 3.5rem;
+  border-radius: 1rem;
+  background: linear-gradient(135deg, var(--primary-600), #787ba3);
+  color: #fff;
+  font-weight: 800;
+  font-size: 1.1rem;
+  letter-spacing: 0.04em;
+  box-shadow: 0 0.75rem 1.5rem rgba(94, 96, 130, 0.32);
+  margin-bottom: 1rem;
+}
+
+.attend-header h1 {
+  margin: 0;
+  font-size: 1.75rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+}
+
+.attend-subtitle {
+  margin: 0.3rem 0 0;
+  font-size: 0.88rem;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+/* Stepper */
+.attend-stepper {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 0;
+  margin-bottom: 1.5rem;
+  padding: 0 1rem;
+  overflow-x: auto;
+}
+
+.attend-step-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  flex: 1;
+  min-width: 3.5rem;
+}
+
+.attend-step-dot {
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 999rem;
+  display: grid;
+  place-items: center;
+  font-size: 0.82rem;
+  font-weight: 700;
+  border: 2px solid rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.05);
+  color: rgba(255, 255, 255, 0.4);
+  transition: all 300ms ease;
+  position: relative;
+  z-index: 2;
+}
+
+.attend-step-dot.active {
+  border-color: rgba(255, 255, 255, 0.6);
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
+  box-shadow: 0 0 1.5rem rgba(255, 255, 255, 0.15);
+  animation: attend-pulse 1.5s ease infinite;
+}
+
+.attend-step-dot.passed {
+  border-color: #4ade80;
+  background: rgba(74, 222, 128, 0.2);
+  color: #4ade80;
+}
+
+.attend-step-dot.failed {
+  border-color: #f87171;
+  background: rgba(248, 113, 113, 0.15);
+  color: #f87171;
+}
+
+@keyframes attend-pulse {
+  0%, 100% { box-shadow: 0 0 0.5rem rgba(255, 255, 255, 0.1); }
+  50% { box-shadow: 0 0 1.5rem rgba(255, 255, 255, 0.25); }
+}
+
+.attend-step-label {
+  margin-top: 0.4rem;
+  font-size: 0.62rem;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.35);
+  text-align: center;
+  white-space: nowrap;
+  transition: color 250ms ease;
+}
+
+.attend-step-label.active {
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.attend-step-line {
+  position: absolute;
+  top: 1.125rem;
+  left: calc(50% + 1.25rem);
+  width: calc(100% - 2.5rem);
+  height: 2px;
+  background: rgba(255, 255, 255, 0.1);
+  z-index: 1;
+  transition: background 300ms ease;
+}
+
+.attend-step-line.passed {
+  background: rgba(74, 222, 128, 0.4);
+}
+
+/* Session info bar */
+.attend-session-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1.25rem;
+  padding: 0.7rem 1rem;
+  margin-bottom: 1.25rem;
+  border-radius: 0.75rem;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+/* Content card */
+.attend-card {
+  border-radius: 1.25rem;
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(1.5rem);
+  padding: 2rem;
+  text-align: center;
+  animation: attend-card-in 280ms ease-out;
+}
+
+@keyframes attend-card-in {
+  from { opacity: 0; transform: translateY(0.5rem) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.attend-card h2 {
+  margin: 0.75rem 0 0.4rem;
+  font-size: 1.4rem;
+  font-weight: 700;
+}
+
+.attend-muted {
+  margin: 0;
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+/* Spinner */
+.attend-spinner {
+  width: 2.5rem;
+  height: 2.5rem;
+  margin: 0 auto 1rem;
+  border: 3px solid rgba(255, 255, 255, 0.1);
+  border-top-color: rgba(255, 255, 255, 0.6);
+  border-radius: 999rem;
+  animation: attend-spin 800ms linear infinite;
+}
+
+@keyframes attend-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Form */
+.attend-form {
+  margin-top: 1.5rem;
+  text-align: left;
+}
+
+.attend-field {
+  margin-bottom: 1rem;
+}
+
+.attend-field label {
+  display: block;
+  margin-bottom: 0.35rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.attend-field input {
+  width: 100%;
+  min-height: 2.75rem;
+  padding: 0.5rem 0.85rem;
+  border-radius: 0.75rem;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.06);
+  color: #fff;
+  font-size: 0.9rem;
+  font-family: inherit;
+  transition: border-color 200ms ease, box-shadow 200ms ease;
+}
+
+.attend-field input::placeholder {
+  color: rgba(255, 255, 255, 0.3);
+}
+
+.attend-field input:focus {
+  outline: none;
+  border-color: rgba(255, 255, 255, 0.4);
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.08);
+}
+
+/* Buttons */
+.attend-btn {
+  width: 100%;
+  min-height: 3rem;
+  border: none;
+  border-radius: 0.85rem;
+  font-size: 0.95rem;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 200ms ease;
+}
+
+.attend-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.attend-btn-primary {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.18), rgba(255, 255, 255, 0.08));
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #fff;
+  backdrop-filter: blur(0.8rem);
+  box-shadow: 0 0.5rem 1.5rem rgba(255, 255, 255, 0.06);
+}
+
+.attend-btn-primary:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.22);
+  box-shadow: 0 0 1.5rem rgba(255, 255, 255, 0.15);
+  transform: translateY(-1px);
+}
+
+.attend-btn-outline {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.attend-btn-outline:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+/* Video */
+.attend-video-wrap {
+  width: 100%;
+  max-width: 22rem;
+  margin: 1rem auto;
+  border-radius: 1rem;
+  overflow: hidden;
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  background: #000;
+  aspect-ratio: 4 / 3;
+}
+
+.attend-video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.attend-face-status {
+  margin: 0.75rem 0;
+  font-size: 0.82rem;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+/* Success / Error */
+.attend-card-success {
+  border-color: rgba(74, 222, 128, 0.3);
+  background: rgba(74, 222, 128, 0.06);
+}
+
+.attend-card-error {
+  border-color: rgba(248, 113, 113, 0.3);
+  background: rgba(248, 113, 113, 0.06);
+}
+
+.attend-success-icon {
+  width: 4rem;
+  height: 4rem;
+  margin: 0 auto 0.5rem;
+  border-radius: 999rem;
+  display: grid;
+  place-items: center;
+  font-size: 1.75rem;
+  font-weight: 700;
+  background: rgba(74, 222, 128, 0.2);
+  color: #4ade80;
+  border: 2px solid rgba(74, 222, 128, 0.3);
+  animation: attend-success-pop 400ms ease;
+}
+
+@keyframes attend-success-pop {
+  0% { transform: scale(0.5); opacity: 0; }
+  60% { transform: scale(1.1); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.attend-error-icon {
+  width: 4rem;
+  height: 4rem;
+  margin: 0 auto 0.5rem;
+  border-radius: 999rem;
+  display: grid;
+  place-items: center;
+  font-size: 1.75rem;
+  font-weight: 700;
+  background: rgba(248, 113, 113, 0.2);
+  color: #f87171;
+  border: 2px solid rgba(248, 113, 113, 0.3);
+}
+
+.attend-error-msg {
+  margin: 0.5rem 0 1.5rem;
+  font-size: 0.88rem;
+  color: #fca5a5;
+}
+
+.attend-success-text {
+  margin: 0.5rem 0;
+  font-size: 0.88rem;
+  color: #4ade80;
+  font-weight: 600;
+}
+
+.attend-warn-text {
+  margin: 0.5rem 0;
+  font-size: 0.88rem;
+  color: #fbbf24;
+  font-weight: 600;
+}
+
+/* Verification badges */
+.attend-verify-badges {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-top: 1.25rem;
+}
+
+.attend-badge {
+  padding: 0.35rem 0.75rem;
+  border-radius: 999rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+}
+
+.attend-badge-pass {
+  background: rgba(74, 222, 128, 0.15);
+  color: #4ade80;
+  border: 1px solid rgba(74, 222, 128, 0.25);
+}
+
+.attend-badge-warn {
+  background: rgba(251, 191, 36, 0.15);
+  color: #fbbf24;
+  border: 1px solid rgba(251, 191, 36, 0.25);
+}
+
+/* QR location badge on teacher side */
+.qr-location-badge {
+  margin-top: 0.5rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #4ade80;
+  text-align: center;
+}
+
+.qr-location-badge.warn {
+  color: #fbbf24;
+}
+
+/* Responsive */
+@media (max-width: 30rem) {
+  .attend-card {
+    padding: 1.25rem;
+  }
+
+  .attend-step-label {
+    font-size: 0.55rem;
+  }
+
+  .attend-step-dot {
+    width: 1.85rem;
+    height: 1.85rem;
+    font-size: 0.72rem;
+  }
+}

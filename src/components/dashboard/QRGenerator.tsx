@@ -27,7 +27,28 @@ export default function QRGenerator({
   const [qrSession, setQrSession] = useState<QrSessionStartResponse | null>(null)
   const [countdownMs, setCountdownMs] = useState(0)
   const [error, setError] = useState('')
+  const [teacherLocation, setTeacherLocation] = useState<{ lat: number; lng: number } | null>(null)
+  const [locationStatus, setLocationStatus] = useState<'idle' | 'fetching' | 'done' | 'error'>('idle')
   const refreshInFlightRef = useRef(false)
+
+  // Capture teacher's geolocation once when component mounts
+  useEffect(() => {
+    if (!navigator.geolocation) {
+      setLocationStatus('error')
+      return
+    }
+    setLocationStatus('fetching')
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setTeacherLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude })
+        setLocationStatus('done')
+      },
+      () => {
+        setLocationStatus('error')
+      },
+      { enableHighAccuracy: true, timeout: 10000 },
+    )
+  }, [])
 
   const refreshQrSession = useCallback(async () => {
     if (sessionStatus !== SessionStatus.ACTIVE) return
@@ -39,6 +60,8 @@ export default function QRGenerator({
         classId,
         subject: subject.trim(),
         room: room.trim(),
+        classroomLat: teacherLocation?.lat ?? null,
+        classroomLng: teacherLocation?.lng ?? null,
       })
       setQrSession(result)
       setCountdownMs(Math.max(0, result.expiresAt - Date.now()))
@@ -49,7 +72,7 @@ export default function QRGenerator({
     } finally {
       refreshInFlightRef.current = false
     }
-  }, [classId, room, sessionStatus, subject])
+  }, [classId, room, sessionStatus, subject, teacherLocation])
 
   useEffect(() => {
     if (sessionStatus !== SessionStatus.ACTIVE) {
@@ -79,13 +102,11 @@ export default function QRGenerator({
     return () => window.clearInterval(id)
   }, [qrSession, refreshQrSession, sessionStatus])
 
+  // Encode as a URL that students can open directly
   const qrValue = useMemo(() => {
     if (!qrSession) return ''
-    return JSON.stringify({
-      sessionId: qrSession.sessionId,
-      token: qrSession.token,
-      expiresAt: qrSession.expiresAt,
-    })
+    const baseUrl = window.location.origin
+    return `${baseUrl}/attend?sessionId=${encodeURIComponent(qrSession.sessionId)}&token=${encodeURIComponent(qrSession.token)}`
   }, [qrSession])
 
   if (sessionStatus !== SessionStatus.ACTIVE) {
@@ -117,6 +138,12 @@ export default function QRGenerator({
         )}
       </div>
       <div className="qr-countdown">QR expires in {formatCountdown(countdownMs)}</div>
+      {locationStatus === 'done' && (
+        <div className="qr-location-badge">📍 Location captured</div>
+      )}
+      {locationStatus === 'error' && (
+        <div className="qr-location-badge warn">⚠ Location unavailable — geo check disabled</div>
+      )}
     </div>
   )
 }

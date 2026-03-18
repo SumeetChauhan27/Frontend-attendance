@@ -106,6 +106,31 @@ export type QrSessionStartResponse = {
   expiresAt: number
 }
 
+export type QrSessionValidation = {
+  valid: boolean
+  classId: string
+  subject: string
+  room: string
+  expiresAt: number
+  hasLocation: boolean
+}
+
+export type SecureAttendancePayload = {
+  studentId: string
+  password?: string
+  sessionId: string
+  token: string
+  faceVerified: boolean
+  location?: { lat: number; lng: number } | null
+}
+
+export type SecureAttendanceResult = {
+  message: string
+  studentId: string
+  studentName: string
+  verified: { face: boolean; location: boolean }
+}
+
 const apiBase = import.meta.env.VITE_API_URL
 
 const toJson = async <T>(res: Response): Promise<T> => {
@@ -384,6 +409,8 @@ export const startQrSession = async (payload: {
   classId: string
   subject: string
   room?: string
+  classroomLat?: number | null
+  classroomLng?: number | null
 }): Promise<QrSessionStartResponse> => {
   const res = await fetch(`${apiBase}/api/session/start`, {
     method: 'POST',
@@ -410,4 +437,27 @@ export const downloadAttendanceCsv = async (classId: string): Promise<void> => {
   link.click()
   document.body.removeChild(link)
   URL.revokeObjectURL(url)
+}
+
+export const validateQrSession = async (
+  sessionId: string,
+  token: string,
+): Promise<QrSessionValidation> => {
+  const res = await fetch(`${apiBase}/api/session/validate`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ sessionId, token }),
+  })
+  return toJson(res)
+}
+
+export const markAttendanceSecure = async (
+  payload: SecureAttendancePayload,
+): Promise<SecureAttendanceResult> => {
+  const res = await fetch(`${apiBase}/api/attendance/mark-secure`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  })
+  return toJson(res)
 }

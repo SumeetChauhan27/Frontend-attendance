@@ -34,4 +34,6 @@ export const startQrAttendanceSession = async (payload: {
   classId: string
   subject: string
   room?: string
+  classroomLat?: number | null
+  classroomLng?: number | null
 }): Promise<QrSessionStartResponse> => startQrSession(payload)

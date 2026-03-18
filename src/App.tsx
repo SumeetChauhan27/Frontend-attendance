@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react'
-import { Navigate, Route, Routes } from 'react-router-dom'
+import { Navigate, Route, Routes, useLocation } from 'react-router-dom'
 import type { User } from './api'
 import LoginPage from './pages/LoginPage'
 import FaceRegistration from './pages/FaceRegistration'
 import ManagementPanel from './pages/ManagementPanel'
+import QrAttendancePage from './pages/QrAttendancePage'
 import Reports from './pages/Reports'
 import Settings from './pages/Settings'
 import SuperAdminDashboard from './pages/SuperAdminDashboard'
@@ -18,8 +19,17 @@ function App() {
   const [user, setUser] = useState<User | null>(null)
   const [bootstrapping, setBootstrapping] = useState(true)
   const [isAuthenticating, setIsAuthenticating] = useState(false)
+  const location = useLocation()
+
+  // The /attend route is public — skip session restore for it
+  const isAttendPage = location.pathname === '/attend'
 
   useEffect(() => {
+    if (isAttendPage) {
+      setBootstrapping(false)
+      return
+    }
+
     const bootstrap = async () => {
       const nextUser = await restoreSession()
       setUser(nextUser)
@@ -27,7 +37,7 @@ function App() {
     }
 
     void bootstrap()
-  }, [])
+  }, [isAttendPage])
 
   const handleLogin = async (payload: LoginPayload) => {
     setIsAuthenticating(true)
@@ -42,6 +52,11 @@ function App() {
   const handleLogout = async () => {
     await signOut()
     setUser(null)
+  }
+
+  // Public route: QR attendance page
+  if (isAttendPage) {
+    return <QrAttendancePage />
   }
 
   if (bootstrapping) {
