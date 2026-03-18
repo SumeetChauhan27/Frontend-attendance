@@ -1,6 +1,5 @@
 import * as faceapi from 'face-api.js'
 import '@tensorflow/tfjs'
-import { cosineSimilarity } from '../utils/compareEmbeddings'
 
 const MODEL_URI = `${import.meta.env.BASE_URL}models`.replace(/\/{2,}/g, '/')
 const DESCRIPTOR_LENGTH = 128
@@ -14,7 +13,7 @@ let modelsLoadingPromise: Promise<void> | null = null
 
 export interface StoredEmbedding {
   studentId: string
-  descriptor: number[]
+  embeddings: number[][]
 }
 
 const assertDescriptorLength = (descriptor: ArrayLike<number>) => {
@@ -160,21 +159,43 @@ export function averageDescriptors(descriptors: Float32Array[]): Float32Array {
   return total
 }
 
+export interface StoredEmbedding {
+  studentId: string
+  embeddings: number[][]
+}
+
 export function toStoredEmbedding(
   studentId: string,
-  descriptor: Float32Array,
+  descriptors: Float32Array[],
 ): StoredEmbedding {
-  assertDescriptorLength(descriptor)
+  descriptors.forEach(assertDescriptorLength)
   return {
     studentId,
-    descriptor: Array.from(descriptor),
+    embeddings: descriptors.map(desc => Array.from(desc)),
   }
+}
+
+export function normalize(vec: number[]): number[] {
+  const mag = Math.sqrt(vec.reduce((sum, v) => sum + v * v, 0))
+  if (mag === 0) return vec
+  return vec.map(v => v / mag)
+}
+
+export function cosineSimilarityNormalized(a: number[], b: number[]): number {
+  if (a.length !== b.length) return 0
+  const normA = normalize(a)
+  const normB = normalize(b)
+  let dotProduct = 0
+  for (let i = 0; i < normA.length; i++) {
+    dotProduct += normA[i] * normB[i]
+  }
+  return Math.min(Math.max(dotProduct, -1), 1)
 }
 
 export function findBestMatch(
   currentDescriptor: Float32Array,
   storedEmbeddings: StoredEmbedding[],
-  threshold = 0.6,
+  threshold = 0.55,
 ): { studentId: string | null; similarity: number } {
   assertDescriptorLength(currentDescriptor)
 
@@ -186,16 +207,21 @@ export function findBestMatch(
   let bestSimilarity = 0
   const current = Array.from(currentDescriptor)
 
-  for (const embedding of storedEmbeddings) {
-    assertDescriptorLength(embedding.descriptor)
-    const similarity = cosineSimilarity(current, embedding.descriptor)
-    if (similarity > bestSimilarity) {
-      bestSimilarity = similarity
-      bestStudentId = embedding.studentId
+  for (const student of storedEmbeddings) {
+    if (!student.embeddings || !Array.isArray(student.embeddings)) continue
+
+    for (const emb of student.embeddings) {
+      if (!emb || emb.length !== DESCRIPTOR_LENGTH) continue
+      
+      const similarity = cosineSimilarityNormalized(current, emb)
+      if (similarity > bestSimilarity) {
+        bestSimilarity = similarity
+        bestStudentId = student.studentId
+      }
     }
   }
 
-  if (bestSimilarity > threshold) {
+  if (bestSimilarity >= threshold) {
     return { studentId: bestStudentId, similarity: bestSimilarity }
   }
 

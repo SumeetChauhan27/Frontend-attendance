@@ -1,14 +1,11 @@
 import { useEffect, useRef, useState } from 'react'
 import toast from 'react-hot-toast'
-import { getStudentFaceEmbedding } from '../../api'
+import { registerStudentFaceEmbedding, matchFace } from '../../api'
 import {
-  averageDescriptors,
   collectFaceDescriptorSamples,
+  cosineSimilarityNormalized,
   extractFaceDescriptorWithRetry,
-  findBestMatch,
   loadFaceModels,
-  toStoredEmbedding,
-  type StoredEmbedding,
 } from '../../services/faceModelService'
 import { attachCamera, releaseCamera } from '../../services/cameraService'
 
@@ -16,23 +13,6 @@ type StudentFaceRecognitionProps = {
   studentId: string
   isSessionActive: boolean
   onRecognized: () => Promise<void>
-}
-
-const STORAGE_KEY = 'attendance_face_embeddings'
-
-const loadEmbeddings = (): StoredEmbedding[] => {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY)
-    if (!raw) return []
-    const parsed = JSON.parse(raw) as StoredEmbedding[]
-    return Array.isArray(parsed) ? parsed : []
-  } catch {
-    return []
-  }
-}
-
-const saveEmbeddings = (items: StoredEmbedding[]) => {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(items))
 }
 
 export default function StudentFaceRecognition({
@@ -62,19 +42,6 @@ export default function StudentFaceRecognition({
         setStatusMessage('Face models are missing. Add model files under /models.')
         toast.error('Face models failed to load.')
         return
-      }
-
-      try {
-        const stored = await getStudentFaceEmbedding()
-        if (stored.descriptor.length) {
-          const next = [
-            ...loadEmbeddings().filter((item) => item.studentId !== stored.studentId),
-            stored,
-          ]
-          saveEmbeddings(next)
-        }
-      } catch {
-        // Keep the local-storage fallback if backend embedding is not available yet.
       }
       setStatusMessage('')
     }
@@ -143,14 +110,10 @@ export default function StudentFaceRecognition({
         toast.error('No face detected. Please look at the camera.')
         return
       }
-      const descriptor = averageDescriptors(samples)
-      const embedding = toStoredEmbedding(studentId, descriptor)
-      const embeddings = loadEmbeddings()
-      const next = [
-        ...embeddings.filter((item) => item.studentId !== studentId),
-        embedding,
-      ]
-      saveEmbeddings(next)
+      
+      const arrays = samples.map(s => Array.from(s))
+      await registerStudentFaceEmbedding(arrays)
+      
       setStatusMessage(`Face enrolled successfully using ${samples.length} samples.`)
       toast.success('Face enrolled successfully.')
     } catch (error) {
@@ -166,28 +129,59 @@ export default function StudentFaceRecognition({
     if (!cameraReady || !modelsReady || !isSessionActive) return
     setLoading(true)
     try {
-      setStatusMessage('Verifying face. Hold still for a moment...')
-      const descriptor = await getDescriptor()
-      if (!descriptor) {
+      setStatusMessage('Verifying face via secure backend match. Hold still...')
+      const descriptor1 = await getDescriptor()
+      if (!descriptor1) {
         setStatusMessage('No clear face detected. Improve lighting and retry.')
         toast.error('No face detected. Please look at the camera.')
         return
       }
-      const embeddings = loadEmbeddings()
-      if (!embeddings.length) {
-        setStatusMessage('No enrolled face was found for this student.')
-        toast.error('Enroll a face first before verification.')
+
+      setStatusMessage('Liveness check: analyzing slight movement...')
+      // Wait 600ms to allow minor natural movements
+      await new Promise(resolve => setTimeout(resolve, 600))
+      
+      const descriptor2 = await getDescriptor()
+      if (!descriptor2) {
+        setStatusMessage('Liveness check failed. Keep face in frame.')
+        toast.error('Liveness check failed.')
         return
       }
-      const match = findBestMatch(descriptor, embeddings, 0.65)
-      if (!match.studentId || match.studentId !== studentId) {
-        setStatusMessage('Face did not match this student record.')
-        toast.error('Face not recognized for this student.')
+
+      // If frames are exactly identical (similarity > 0.99), it is likely a static photo spoof.
+      const freshness = cosineSimilarityNormalized(
+        Array.from(descriptor1),
+        Array.from(descriptor2)
+      )
+      if (freshness > 0.99) {
+        setStatusMessage('Liveness check failed. Static image detected.')
+        toast.error('Spoof detected! Please blink or slightly move your head.')
         return
       }
+
+      const match = await matchFace(Array.from(descriptor1))
+      
+      if (match.status === 'rejected' || !match.studentId) {
+        setStatusMessage('Face did not match this student record or no clear match found.')
+        toast.error('Face verification failed.')
+        return
+      }
+      
+      if (match.status === 'retry') {
+        setStatusMessage('Face match was weakly confident. Please improve lighting and try again.')
+        toast.error('Verification uncertain. Please try again.')
+        return
+      }
+      
+      if (match.studentId !== studentId) {
+        setStatusMessage('Face belongs to another registered student. Proxy attempt blocked.')
+        toast.error('Identity verification failed (Spoof detected).')
+        return
+      }
+
       setFaceVerified(true)
       await onRecognized()
-      setStatusMessage(`Face verified with ${Math.round(match.similarity * 100)}% similarity.`)
+      setStatusMessage(`Face securely verified with ${Math.round(match.similarity * 100)}% similarity.`)
       stopCamera()
       toast.success(`Face verified (${Math.round(match.similarity * 100)}%).`)
     } catch (error) {

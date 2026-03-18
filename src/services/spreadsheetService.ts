@@ -51,7 +51,7 @@ export const updateSpreadsheetStudent = async (
     rollNumber: string
     department: string
     year: string
-    faceEmbedding?: number[] | null
+    faceEmbedding?: number[] | number[][] | null
   },
 ): Promise<StudentRecord> => updateStudent(studentId, payload)
 

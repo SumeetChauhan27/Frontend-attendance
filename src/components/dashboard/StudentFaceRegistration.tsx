@@ -1,11 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
 import toast from 'react-hot-toast'
 import {
-  averageDescriptors,
   collectFaceDescriptorSamples,
   loadFaceModels,
-  toStoredEmbedding,
-  type StoredEmbedding,
 } from '../../services/faceModelService'
 import { attachCamera, releaseCamera } from '../../services/cameraService'
 import { updateSpreadsheetStudent } from '../../services/spreadsheetService'
@@ -18,23 +15,6 @@ type StudentFaceRegistrationProps = {
   rollNumber: string
   onClose: () => void
   onSaved: () => Promise<void>
-}
-
-const STORAGE_KEY = 'attendance_face_embeddings'
-
-const loadEmbeddings = (): StoredEmbedding[] => {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY)
-    if (!raw) return []
-    const parsed = JSON.parse(raw) as StoredEmbedding[]
-    return Array.isArray(parsed) ? parsed : []
-  } catch {
-    return []
-  }
-}
-
-const saveEmbeddings = (items: StoredEmbedding[]) => {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(items))
 }
 
 export default function StudentFaceRegistration({
@@ -107,22 +87,15 @@ export default function StudentFaceRegistration({
         toast.error('No face detected. Please align the student face in the frame.')
         return
       }
-      const descriptor = averageDescriptors(samples)
 
       await updateSpreadsheetStudent(studentId, {
         name: studentName,
         rollNumber,
         department,
         year,
-        faceEmbedding: Array.from(descriptor),
+        faceEmbedding: samples.map(desc => Array.from(desc)),
       })
 
-      const embedding = toStoredEmbedding(studentId, descriptor)
-      const next = [
-        ...loadEmbeddings().filter((item) => item.studentId !== studentId),
-        embedding,
-      ]
-      saveEmbeddings(next)
       await onSaved()
       setStatusMessage(`Face registered successfully using ${samples.length} samples.`)
       stopCamera()

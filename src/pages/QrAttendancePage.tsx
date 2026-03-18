@@ -4,15 +4,13 @@ import toast, { Toaster } from 'react-hot-toast'
 import {
   validateQrSession,
   markAttendanceSecure,
-  getStudentFaceEmbedding,
   login,
+  matchFace,
   type QrSessionValidation,
 } from '../api'
 import {
   extractFaceDescriptorWithRetry,
-  findBestMatch,
   loadFaceModels,
-  type StoredEmbedding,
 } from '../services/faceModelService'
 import { attachCamera, releaseCamera } from '../services/cameraService'
 
@@ -142,54 +140,50 @@ export default function QrAttendancePage() {
   const handleFaceVerify = async () => {
     if (!videoRef.current) return
     setFaceLoading(true)
-    setFaceStatus('Capturing face...')
+    setFaceStatus('Verifying face via secure backend match. Hold still...')
 
     try {
-      // Get stored embedding from backend
-      let storedEmbedding: StoredEmbedding | null = null
-      try {
-        const embeddingData = await getStudentFaceEmbedding()
-        if (embeddingData.descriptor.length) {
-          storedEmbedding = embeddingData
-        }
-      } catch {
-        // fallback: check localStorage
-      }
-
-      if (!storedEmbedding) {
-        setFaceStatus('No face enrollment found. Ask your teacher to register your face first.')
-        toast.error('No face enrollment found.')
-        setFaceLoading(false)
-        return
-      }
-
-      // Capture descriptor from live video
-      let descriptor: Float32Array | null = null
+      // Capture descriptor 1
+      let descriptor1: Float32Array | null = null
       if (canvasRef.current) {
         const ctx = canvasRef.current.getContext('2d')
         if (ctx && videoRef.current) {
           canvasRef.current.width = videoRef.current.videoWidth || 640
           canvasRef.current.height = videoRef.current.videoHeight || 480
           ctx.drawImage(videoRef.current, 0, 0, canvasRef.current.width, canvasRef.current.height)
-          descriptor = await extractFaceDescriptorWithRetry(canvasRef.current)
+          descriptor1 = await extractFaceDescriptorWithRetry(canvasRef.current)
         }
       }
-      if (!descriptor && videoRef.current) {
-        descriptor = await extractFaceDescriptorWithRetry(videoRef.current)
+      if (!descriptor1 && videoRef.current) {
+        descriptor1 = await extractFaceDescriptorWithRetry(videoRef.current)
       }
 
-      if (!descriptor) {
+      if (!descriptor1) {
         setFaceStatus('No face detected. Position your face clearly and try again.')
         toast.error('No face detected.')
         setFaceLoading(false)
         return
       }
 
-      const match = findBestMatch(descriptor, [storedEmbedding], 0.6)
+      const match = await matchFace(Array.from(descriptor1))
 
-      if (!match.studentId) {
-        setFaceStatus(`Face did not match (${Math.round(match.similarity * 100)}% similarity).`)
+      if (match.status === 'rejected' || !match.studentId) {
+        setFaceStatus('Face did not match or no face enrolled. Please ask your teacher to verify.')
         toast.error('Face verification failed.')
+        setFaceLoading(false)
+        return
+      }
+
+      if (match.status === 'retry') {
+        setFaceStatus('Match weakly confident. Improve lighting and try again.')
+        toast.error('Verification uncertain. Please try again.')
+        setFaceLoading(false)
+        return
+      }
+
+      if (match.studentId !== studentId) {
+        setFaceStatus('Face belongs to another registered student. Proxy attempt blocked.')
+        toast.error('Identity verification failed (Spoof detected).')
         setFaceLoading(false)
         return
       }

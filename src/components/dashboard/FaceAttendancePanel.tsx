@@ -75,9 +75,9 @@ export default function FaceAttendancePanel({
       ...current.filter((item) => !registeredStudents.some((student) => student.id === item.studentId)),
       ...registeredStudents.map((student) => ({
         studentId: student.id,
-        descriptor: student.faceEmbedding ?? [],
+        embeddings: (Array.isArray(student.faceEmbedding) ? (Array.isArray(student.faceEmbedding[0]) ? student.faceEmbedding : [student.faceEmbedding]) : []) as number[][],
       })),
-    ].filter((item) => item.descriptor.length > 0)
+    ].filter((item) => item.embeddings && item.embeddings.length > 0)
   }, [registeredStudents])
 
   useEffect(() => {
@@ -160,7 +160,7 @@ export default function FaceAttendancePanel({
       setLastMatch({ studentId: match.studentId, similarity: match.similarity })
       saveEmbeddings([
         ...loadEmbeddings().filter((item) => item.studentId !== match.studentId),
-        toStoredEmbedding(match.studentId, descriptor),
+        toStoredEmbedding(match.studentId, [descriptor]),
       ])
 
       if (presentIds.has(match.studentId)) {

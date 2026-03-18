@@ -213,7 +213,7 @@ export const updateStudent = async (
     rollNumber: string
     department: string
     year: string
-    faceEmbedding?: number[] | null
+    faceEmbedding?: number[][] | number[] | null
   },
 ): Promise<StudentRecord> => {
   const res = await fetch(`${apiBase}/api/students/${studentId}`, {
@@ -362,9 +362,23 @@ export const getStudentAttendanceByTeacher = async (
   return toJson(res)
 }
 
-export const getStudentFaceEmbedding = async (): Promise<StudentFaceEmbedding> => {
+export const getStudentFaceEmbedding = async (): Promise<{
+  studentId: string
+  descriptor: number[]
+}> => {
   const res = await fetch(`${apiBase}/api/student/face-embedding`, {
     headers: { ...authHeader() },
+  })
+  return toJson(res)
+}
+
+export const registerStudentFaceEmbedding = async (
+  embeddings: number[][]
+): Promise<{ message: string; embeddings: number[][] }> => {
+  const res = await fetch(`${apiBase}/api/student/face-embedding`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...authHeader() },
+    body: JSON.stringify({ embeddings }),
   })
   return toJson(res)
 }
@@ -458,6 +472,17 @@ export const markAttendanceSecure = async (
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),
+  })
+  return toJson(res)
+}
+
+export const matchFace = async (
+  descriptor: number[],
+): Promise<{ studentId: string | null; name: string; similarity: number; status: 'accepted'|'retry'|'rejected' }> => {
+  const res = await fetch(`${apiBase}/api/face/match`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ descriptor }),
   })
   return toJson(res)
 }
