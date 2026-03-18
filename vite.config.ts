@@ -3,12 +3,9 @@ import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
 
 // https://vite.dev/config/
-export default defineConfig(({ mode }) => {
-  const isMobile = mode === 'mobile'
-  const base = isMobile ? './' : '/Attendence-portal-/'
-
+export default defineConfig(() => {
   return {
-    base,
+    base: '/',
     plugins: [
       react(),
       VitePWA({
@@ -21,7 +18,7 @@ export default defineConfig(({ mode }) => {
           theme_color: '#5d2fd2',
           background_color: '#f2f2fb',
           display: 'standalone',
-          start_url: isMobile ? './' : '/Attendence-portal-/',
+          start_url: '/',
           icons: [
             {
               src: 'icon.svg',
