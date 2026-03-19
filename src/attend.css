@@ -67,8 +67,9 @@
   justify-content: center;
   gap: 0;
   margin-bottom: 1.5rem;
-  padding: 0 1rem;
+  padding: 0 1rem 0.5rem;
   overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .attend-step-item {
@@ -127,7 +128,11 @@
   font-weight: 500;
   color: rgba(255, 255, 255, 0.35);
   text-align: center;
-  white-space: nowrap;
+  white-space: normal;
+  line-height: 1.3;
+  word-wrap: break-word;
+  max-width: 4.5rem;
+  padding: 0 0.1rem;
   transition: color 250ms ease;
 }
 
@@ -429,13 +434,28 @@
     padding: 1.25rem;
   }
 
+  .attend-stepper {
+    justify-content: flex-start;
+  }
+
+  .attend-step-item {
+    min-width: 4.5rem;
+  }
+
   .attend-step-label {
     font-size: 0.55rem;
+    max-width: 4rem;
   }
 
   .attend-step-dot {
     width: 1.85rem;
     height: 1.85rem;
     font-size: 0.72rem;
+  }
+
+  .attend-step-line {
+    top: 0.925rem;
+    left: calc(50% + 1rem);
+    width: calc(100% - 2rem);
   }
 }
