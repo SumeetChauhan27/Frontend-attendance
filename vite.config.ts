@@ -36,5 +36,36 @@ export default defineConfig(() => {
         '/api': 'http://localhost:5000',
       },
     },
+    build: {
+      // Target modern browsers for smaller output
+      target: 'es2020',
+      // Increase warning threshold (face-api.js is legitimately large)
+      chunkSizeWarningLimit: 1200,
+      rollupOptions: {
+        output: {
+          manualChunks: (id) => {
+            // React ecosystem — tiny, fast, cached separately
+            if (id.includes('node_modules/react') ||
+                id.includes('node_modules/react-dom') ||
+                id.includes('node_modules/react-router-dom') ||
+                id.includes('node_modules/scheduler')) {
+              return 'react-vendor'
+            }
+            // TensorFlow + face-api — huge, lazy-loaded, cache separately
+            if (id.includes('@tensorflow') || id.includes('face-api')) {
+              return 'face-chunk'
+            }
+            // QR scanning / generation
+            if (id.includes('@zxing') || id.includes('qrcode')) {
+              return 'qr-chunk'
+            }
+            // PapaParse + spreadsheet utilities
+            if (id.includes('papaparse')) {
+              return 'csv-chunk'
+            }
+          },
+        },
+      },
+    },
   }
 })
