@@ -145,9 +145,9 @@ export default function QrAttendancePage() {
     try {
       // Capture descriptor 1
       let descriptor1: Float32Array | null = null
-      if (canvasRef.current) {
+      if (canvasRef.current && videoRef.current) {
         const ctx = canvasRef.current.getContext('2d')
-        if (ctx && videoRef.current) {
+        if (ctx) {
           canvasRef.current.width = videoRef.current.videoWidth || 640
           canvasRef.current.height = videoRef.current.videoHeight || 480
           ctx.drawImage(videoRef.current, 0, 0, canvasRef.current.width, canvasRef.current.height)
@@ -161,6 +161,50 @@ export default function QrAttendancePage() {
       if (!descriptor1) {
         setFaceStatus('No face detected. Position your face clearly and try again.')
         toast.error('No face detected.')
+        setFaceLoading(false)
+        return
+      }
+      
+      setFaceStatus('Liveness check: analyzing slight movement...')
+      // Wait 600ms to allow minor natural movements
+      await new Promise(resolve => setTimeout(resolve, 600))
+      
+      let descriptor2: Float32Array | null = null
+      if (canvasRef.current && videoRef.current) {
+        const ctx = canvasRef.current.getContext('2d')
+        if (ctx) {
+          ctx.drawImage(videoRef.current, 0, 0, canvasRef.current.width, canvasRef.current.height)
+          descriptor2 = await extractFaceDescriptorWithRetry(canvasRef.current)
+        }
+      }
+      if (!descriptor2 && videoRef.current) {
+        descriptor2 = await extractFaceDescriptorWithRetry(videoRef.current)
+      }
+
+      if (!descriptor2) {
+        setFaceStatus('Liveness check failed. Keep face in frame.')
+        toast.error('Liveness check failed.')
+        setFaceLoading(false)
+        return
+      }
+
+      // Liveness and anti-spoof check
+      const { cosineSimilarityNormalized } = await import('../services/faceModelService')
+      const freshness = cosineSimilarityNormalized(
+        Array.from(descriptor1),
+        Array.from(descriptor2)
+      )
+      
+      if (freshness > 0.99) {
+        setFaceStatus('Liveness check failed. Static image detected.')
+        toast.error('Spoof detected! Please blink or slightly move your head.')
+        setFaceLoading(false)
+        return
+      }
+      
+      if (freshness < 0.85) {
+        setFaceStatus('Liveness check failed. Face changed too much.')
+        toast.error('Movement too fast or face lost.')
         setFaceLoading(false)
         return
       }

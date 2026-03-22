@@ -3,6 +3,7 @@ import toast from 'react-hot-toast'
 import {
   collectFaceDescriptorSamples,
   loadFaceModels,
+  toStoredEmbedding,
 } from '../../services/faceModelService'
 import { attachCamera, releaseCamera } from '../../services/cameraService'
 import { updateSpreadsheetStudent } from '../../services/spreadsheetService'
@@ -71,7 +72,7 @@ export default function StudentFaceRegistration({
     if (!cameraReady || !modelsReady || !videoRef.current) return
     setLoading(true)
     try {
-      setStatusMessage('Capturing 3 face samples. Hold still and look at the camera...')
+      setStatusMessage('Capturing 7 face samples. Please move your head slightly between captures...')
       const captureTarget = canvasRef.current ?? videoRef.current
       if (canvasRef.current) {
         const context = canvasRef.current.getContext('2d')
@@ -81,10 +82,10 @@ export default function StudentFaceRegistration({
           context.drawImage(videoRef.current, 0, 0, canvasRef.current.width, canvasRef.current.height)
         }
       }
-      const samples = await collectFaceDescriptorSamples(captureTarget, 3, 6, 300)
-      if (samples.length < 2) {
+      const samples = await collectFaceDescriptorSamples(captureTarget, 7, 6, 300)
+      if (samples.length < 3) {
         setStatusMessage('Unable to capture enough clear face samples. Move closer and retry.')
-        toast.error('No face detected. Please align the student face in the frame.')
+        toast.error('Not enough clear face samples detected.')
         return
       }
 
@@ -93,7 +94,7 @@ export default function StudentFaceRegistration({
         rollNumber,
         department,
         year,
-        faceEmbedding: samples.map(desc => Array.from(desc)),
+        faceEmbedding: toStoredEmbedding(studentId, samples) as any, // backend expects JSON string or array, it will stringify the object
       })
 
       await onSaved()

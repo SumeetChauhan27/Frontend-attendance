@@ -2743,6 +2743,35 @@ textarea {
   border-color: rgba(255, 255, 255, 0.2);
 }
 
+.teacher-page .modal .slot-time,
+.student-page .modal .slot-time {
+  color: var(--app-text-soft);
+}
+
+.teacher-page .modal .slot-subject,
+.teacher-page .modal .slot-lines,
+.student-page .modal .slot-subject,
+.student-page .modal .slot-lines {
+  color: var(--app-text);
+}
+
+.teacher-page .modal .muted,
+.student-page .modal .muted {
+  color: var(--app-text-muted);
+}
+
+.teacher-page .modal .btn-outline,
+.student-page .modal .btn-outline {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.18);
+  color: var(--app-text);
+}
+
+.teacher-page .modal .btn-outline:hover,
+.student-page .modal .btn-outline:hover {
+  background: rgba(255, 255, 255, 0.16);
+}
+
 .student-page .student-logout-btn {
   color: #f87171;
   border-color: rgba(248, 113, 113, 0.32);

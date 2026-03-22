@@ -50,6 +50,7 @@ export async function loadFaceModels(): Promise<void> {
 
 export async function extractFaceDescriptor(
   image: HTMLImageElement | HTMLVideoElement | HTMLCanvasElement,
+  checkQuality = false,
 ): Promise<Float32Array | null> {
   if (!modelsLoaded) {
     throw new Error('Face models are not loaded. Call loadFaceModels() first.')
@@ -62,8 +63,17 @@ export async function extractFaceDescriptor(
 
   if (!detection) return null
 
+  if (checkQuality) {
+    // Basic quality checks: box size
+    const box = detection.detection.box
+    if (box.width < 100 || box.height < 100) {
+      throw new Error('Face too far or too low resolution. Move closer.')
+    }
+  }
+
   assertDescriptorLength(detection.descriptor)
-  return detection.descriptor
+  // Normalize descriptor immediately upon extraction
+  return new Float32Array(normalize(Array.from(detection.descriptor)))
 }
 
 export async function waitForVideoReady(video: HTMLVideoElement): Promise<void> {
@@ -97,15 +107,24 @@ export async function extractFaceDescriptorWithRetry(
   video: HTMLVideoElement | HTMLCanvasElement,
   attempts = 8,
   delayMs = 250,
+  checkQuality = false,
 ): Promise<Float32Array | null> {
   if (video instanceof HTMLVideoElement) {
     await waitForVideoReady(video)
   }
 
+  let lastError: Error | null = null
+
   for (let index = 0; index < attempts; index += 1) {
-    const descriptor = await extractFaceDescriptor(video)
-    if (descriptor) {
-      return descriptor
+    try {
+      const descriptor = await extractFaceDescriptor(video, checkQuality)
+      if (descriptor) {
+        return descriptor
+      }
+    } catch (err) {
+      if (err instanceof Error && err.message.includes('too far')) {
+         lastError = err
+      }
     }
 
     if (index < attempts - 1) {
@@ -113,26 +132,34 @@ export async function extractFaceDescriptorWithRetry(
     }
   }
 
+  if (lastError) throw lastError
   return null
 }
 
 export async function collectFaceDescriptorSamples(
   video: HTMLVideoElement | HTMLCanvasElement,
-  sampleCount = 3,
+  sampleCount = 7,
   attemptsPerSample = 6,
   delayMs = 300,
 ): Promise<Float32Array[]> {
   const samples: Float32Array[] = []
 
   for (let index = 0; index < sampleCount; index += 1) {
-    const descriptor = await extractFaceDescriptorWithRetry(video, attemptsPerSample, delayMs)
-    if (!descriptor) {
+    try {
+      // Use strict quality checks during registration
+      const descriptor = await extractFaceDescriptorWithRetry(video, attemptsPerSample, delayMs, true)
+      if (!descriptor) {
+        break
+      }
+      samples.push(descriptor)
+    } catch (err) {
+      console.warn('Sample collection failed:', err)
       break
     }
-    samples.push(descriptor)
 
     if (index < sampleCount - 1) {
-      await new Promise((resolve) => window.setTimeout(resolve, 250))
+      // Pause to allow slight movement
+      await new Promise((resolve) => window.setTimeout(resolve, 400))
     }
   }
 
@@ -156,12 +183,13 @@ export function averageDescriptors(descriptors: Float32Array[]): Float32Array {
     total[index] /= descriptors.length
   }
 
-  return total
+  return new Float32Array(normalize(Array.from(total)))
 }
 
 export interface StoredEmbedding {
   studentId: string
   embeddings: number[][]
+  averageEmbedding?: number[]
 }
 
 export function toStoredEmbedding(
@@ -169,9 +197,12 @@ export function toStoredEmbedding(
   descriptors: Float32Array[],
 ): StoredEmbedding {
   descriptors.forEach(assertDescriptorLength)
+  const average = averageDescriptors(descriptors)
+  
   return {
     studentId,
     embeddings: descriptors.map(desc => Array.from(desc)),
+    averageEmbedding: Array.from(average),
   }
 }
 
@@ -195,35 +226,63 @@ export function cosineSimilarityNormalized(a: number[], b: number[]): number {
 export function findBestMatch(
   currentDescriptor: Float32Array,
   storedEmbeddings: StoredEmbedding[],
-  threshold = 0.55,
-): { studentId: string | null; similarity: number } {
+  threshold = 0.65,
+): { studentId: string | null; similarity: number; status: 'accepted'|'retry'|'rejected' } {
   assertDescriptorLength(currentDescriptor)
 
   if (storedEmbeddings.length === 0) {
-    return { studentId: null, similarity: 0 }
+    return { studentId: null, similarity: 0, status: 'rejected' }
   }
 
-  let bestStudentId: string | null = null
-  let bestSimilarity = 0
-  const current = Array.from(currentDescriptor)
+  const current = normalize(Array.from(currentDescriptor))
+  
+  const matches: { studentId: string, score: number }[] = []
 
   for (const student of storedEmbeddings) {
-    if (!student.embeddings || !Array.isArray(student.embeddings)) continue
+    let bestForStudent = 0
 
-    for (const emb of student.embeddings) {
-      if (!emb || emb.length !== DESCRIPTOR_LENGTH) continue
-      
-      const similarity = cosineSimilarityNormalized(current, emb)
-      if (similarity > bestSimilarity) {
-        bestSimilarity = similarity
-        bestStudentId = student.studentId
+    // Compare against average embedding if available
+    if (student.averageEmbedding && student.averageEmbedding.length === DESCRIPTOR_LENGTH) {
+      const avgScore = cosineSimilarityNormalized(current, student.averageEmbedding)
+      bestForStudent = Math.max(bestForStudent, avgScore)
+    }
+
+    // Compare against all raw samples
+    if (student.embeddings && Array.isArray(student.embeddings)) {
+      for (const emb of student.embeddings) {
+        if (!emb || emb.length !== DESCRIPTOR_LENGTH) continue
+        const similarity = cosineSimilarityNormalized(current, emb)
+        bestForStudent = Math.max(bestForStudent, similarity)
       }
     }
+    
+    matches.push({ studentId: student.studentId, score: bestForStudent })
   }
 
-  if (bestSimilarity >= threshold) {
-    return { studentId: bestStudentId, similarity: bestSimilarity }
+  // Sort matches descending
+  matches.sort((a, b) => b.score - a.score)
+  
+  const bestMatch = matches[0]
+  const secondBestMatch = matches.length > 1 ? matches[1] : null
+
+  console.log(`[Face Match] Best: ${bestMatch.score.toFixed(3)} (${bestMatch.studentId}), Second: ${secondBestMatch ? secondBestMatch.score.toFixed(3) : 'N/A'}`)
+
+  // Ambiguity check: prevent cross-matches for similar faces
+  if (secondBestMatch && (bestMatch.score - secondBestMatch.score < 0.05) && bestMatch.score < 0.8) {
+    console.warn('Face match rejected due to ambiguity (gap < 0.05).')
+    return { studentId: null, similarity: bestMatch.score, status: 'rejected' }
   }
 
-  return { studentId: null, similarity: bestSimilarity }
+  let status: 'accepted' | 'retry' | 'rejected' = 'rejected'
+  if (bestMatch.score >= threshold) {
+    status = 'accepted'
+  } else if (bestMatch.score >= 0.55) {
+    status = 'retry'
+  }
+
+  return {
+    studentId: status === 'accepted' ? bestMatch.studentId : null,
+    similarity: bestMatch.score,
+    status
+  }
 }

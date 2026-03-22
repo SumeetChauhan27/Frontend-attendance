@@ -82,7 +82,7 @@ export default function StudentFaceRecognition({
     if (!cameraReady || !modelsReady) return
     setLoading(true)
     try {
-      setStatusMessage('Capturing 3 face samples. Hold still and look at the camera...')
+      setStatusMessage('Capturing 7 face samples. Hold still and look at the camera...')
       const captureTarget =
         canvasRef.current && videoRef.current
           ? (() => {
@@ -103,11 +103,11 @@ export default function StudentFaceRecognition({
             })()
           : videoRef.current
       const samples = captureTarget
-        ? await collectFaceDescriptorSamples(captureTarget, 3, 6, 300)
+        ? await collectFaceDescriptorSamples(captureTarget, 7, 6, 300)
         : []
-      if (samples.length < 2) {
+      if (samples.length < 3) {
         setStatusMessage('Unable to capture enough clear face samples. Improve lighting and retry.')
-        toast.error('No face detected. Please look at the camera.')
+        toast.error('Not enough face samples captured. Please look at the camera.')
         return
       }
       
@@ -148,14 +148,21 @@ export default function StudentFaceRecognition({
         return
       }
 
-      // If frames are exactly identical (similarity > 0.99), it is likely a static photo spoof.
+      // Liveness and anti-spoof check
       const freshness = cosineSimilarityNormalized(
         Array.from(descriptor1),
         Array.from(descriptor2)
       )
+      
       if (freshness > 0.99) {
         setStatusMessage('Liveness check failed. Static image detected.')
         toast.error('Spoof detected! Please blink or slightly move your head.')
+        return
+      }
+      
+      if (freshness < 0.85) {
+        setStatusMessage('Liveness check failed. Face changed too much.')
+        toast.error('Movement too fast or face lost.')
         return
       }
 
