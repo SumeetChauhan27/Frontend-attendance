@@ -84,7 +84,7 @@ export default function QRGenerator({
     void refreshQrSession()
     const id = window.setInterval(() => {
       void refreshQrSession()
-    }, 15000)
+    }, 120000)
     return () => window.clearInterval(id)
   }, [refreshQrSession, sessionStatus])
 
