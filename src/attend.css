@@ -458,9 +458,12 @@
     left: calc(50% + 1rem);
     width: calc(100% - 2rem);
   }
+<<<<<<< HEAD
 
   .attend-video-wrap {
     aspect-ratio: 3 / 4;
     max-width: 100%;
   }
+=======
+>>>>>>> 0fdf6c7d11b8aa812caec52d545c5a34a33976cd
 }

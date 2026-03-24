@@ -6,7 +6,10 @@ import {
   extractFaceDescriptorWithRetry,
   findBestMatch,
   loadFaceModels,
+<<<<<<< HEAD
   toStoredEmbedding,
+=======
+>>>>>>> 0fdf6c7d11b8aa812caec52d545c5a34a33976cd
   type StoredEmbedding,
 } from '../../services/faceModelService'
 import { attachCamera, releaseCamera } from '../../services/cameraService'
@@ -124,6 +127,7 @@ export default function FaceAttendancePanel({
         return
       }
 
+<<<<<<< HEAD
       setStatusMessage('Scanning face. Hold still for a moment...')
       let captureTarget: HTMLVideoElement | HTMLCanvasElement = videoRef.current
       if (canvasRef.current) {
@@ -153,10 +157,66 @@ export default function FaceAttendancePanel({
 
       const matchedStudent = students.find((student) => student.id === match.studentId)
       if (!matchedStudent) {
+=======
+      setStatusMessage('Scanning face (3 clear frames required). Hold still...')
+      
+      let matchedStudentId: string | null = null
+      let averageSimilarity = 0
+
+      // Multi-frame verification: Require 3 consecutive matches
+      for (let i = 0; i < 3; i++) {
+        let captureTarget: HTMLVideoElement | HTMLCanvasElement = videoRef.current
+        if (canvasRef.current) {
+          const context = canvasRef.current.getContext('2d')
+          if (context) {
+            canvasRef.current.width = videoRef.current.videoWidth || 640
+            canvasRef.current.height = videoRef.current.videoHeight || 480
+            context.drawImage(videoRef.current, 0, 0, canvasRef.current.width, canvasRef.current.height)
+            captureTarget = canvasRef.current
+          }
+        }
+
+        const descriptor = await extractFaceDescriptorWithRetry(captureTarget, 4, 250, true)
+        if (!descriptor) {
+          setStatusMessage(`Frame ${i+1}/3 failed: No clear face detected. Move closer, improve lighting, and retry.`)
+          toast.error('Face lost during multi-frame scan.')
+          return
+        }
+
+        const match = findBestMatch(descriptor, registeredEmbeddings)
+        
+        if (match.status !== 'accepted' || !match.studentId) {
+          setLastMatch(null)
+          setStatusMessage(`Frame ${i+1}/3 failed: Face not recognized confidently (${(match.similarity * 100).toFixed(1)}%).`)
+          toast.error('Face verification failed.')
+          return
+        }
+
+        if (i === 0) {
+          matchedStudentId = match.studentId
+        } else if (matchedStudentId !== match.studentId) {
+          setStatusMessage(`Frame ${i+1}/3 failed: Inconsistent face match.`)
+          toast.error('Multiple different faces detected during scan.')
+          return
+        }
+        
+        averageSimilarity += match.similarity
+
+        if (i < 2) {
+          await new Promise(resolve => setTimeout(resolve, 300)) // delay between frames
+        }
+      }
+
+      averageSimilarity /= 3
+
+      const matchedStudent = students.find((student) => student.id === matchedStudentId)
+      if (!matchedStudent || !matchedStudentId) {
+>>>>>>> 0fdf6c7d11b8aa812caec52d545c5a34a33976cd
         toast.error('Matched student record was not found.')
         return
       }
 
+<<<<<<< HEAD
       setLastMatch({ studentId: match.studentId, similarity: match.similarity })
       saveEmbeddings([
         ...loadEmbeddings().filter((item) => item.studentId !== match.studentId),
@@ -164,19 +224,32 @@ export default function FaceAttendancePanel({
       ])
 
       if (presentIds.has(match.studentId)) {
+=======
+      setLastMatch({ studentId: matchedStudentId, similarity: averageSimilarity })
+
+      if (presentIds.has(matchedStudentId)) {
+>>>>>>> 0fdf6c7d11b8aa812caec52d545c5a34a33976cd
         setStatusMessage(`${matchedStudent.name} is already marked present for this session.`)
         toast('Attendance already marked.')
         return
       }
 
       await markTeacherAttendanceByFace({
+<<<<<<< HEAD
         studentId: match.studentId,
+=======
+        studentId: matchedStudentId,
+>>>>>>> 0fdf6c7d11b8aa812caec52d545c5a34a33976cd
         sessionId,
       })
       await onAttendanceMarked()
       stopCamera()
       setStatusMessage(
+<<<<<<< HEAD
         `${matchedStudent.name} marked present with ${(match.similarity * 100).toFixed(1)}% similarity.`,
+=======
+        `${matchedStudent.name} marked present with ${(averageSimilarity * 100).toFixed(1)}% similarity over 3 frames.`,
+>>>>>>> 0fdf6c7d11b8aa812caec52d545c5a34a33976cd
       )
       toast.success(`Marked ${matchedStudent.name} present.`)
     } catch (error) {

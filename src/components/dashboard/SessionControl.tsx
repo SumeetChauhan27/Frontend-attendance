@@ -153,7 +153,11 @@ export default function SessionControl({
             Reset Session
           </button>
         ) : null}
+<<<<<<< HEAD
         {/* Timer removed per request */}
+=======
+        {shouldShowEnd ? <span className="teacher-timer">Live timer: {sessionTimer}</span> : null}
+>>>>>>> 0fdf6c7d11b8aa812caec52d545c5a34a33976cd
       </div>
 
       {attendanceSection}
