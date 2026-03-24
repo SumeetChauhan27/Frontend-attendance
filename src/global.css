@@ -3315,7 +3315,7 @@ textarea {
 
   .spreadsheet-card {
     padding: 1rem;
-    overflow-x: hidden;
+    overflow-x: visible;
   }
 
   .spreadsheet-head {
@@ -3339,6 +3339,12 @@ textarea {
     padding-left: 0;
     padding-right: 0;
     width: calc(100% + 2rem);
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .spreadsheet-table {
+    min-width: 52rem;
   }
 
   .spreadsheet-table th,
