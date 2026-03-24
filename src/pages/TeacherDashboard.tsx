@@ -411,7 +411,6 @@ export default function TeacherDashboard(_props: TeacherDashboardProps) {
             aria-modal="true"
             onClick={(event) => event.stopPropagation()}
           >
-<<<<<<< HEAD
             <div className="slot-modal-header">
               <div className="slot-modal-title-row">
                 <span className="slot-modal-icon">📅</span>
@@ -424,12 +423,6 @@ export default function TeacherDashboard(_props: TeacherDashboardProps) {
                 <span className="slot-empty-icon">📭</span>
                 <p>No scheduled slots for this day</p>
                 <span className="slot-empty-hint">Select a weekday date to see available slots</span>
-=======
-            <h4>Choose Session Slot ({manualDay})</h4>
-            {daySlots.length === 0 ? (
-              <div className="muted compact-text">
-                No scheduled slots for this date. Pick a weekday date.
->>>>>>> 0fdf6c7d11b8aa812caec52d545c5a34a33976cd
               </div>
             ) : (
               <div className="slot-grid modal-grid">
@@ -445,7 +438,6 @@ export default function TeacherDashboard(_props: TeacherDashboardProps) {
                       type="button"
                       onClick={() => handleSlotPick(slot)}
                     >
-<<<<<<< HEAD
                       <div className="slot-card-inner">
                         <div className="slot-time-badge">{formatRange(slot)}</div>
                         <div className="slot-info">
@@ -468,20 +460,6 @@ export default function TeacherDashboard(_props: TeacherDashboardProps) {
                         </div>
                       </div>
                       {isActive && <span className="slot-active-indicator">✓ Selected</span>}
-=======
-                      <div className="slot-time">{formatRange(slot)}</div>
-                      {slot.entries.length > 1 ? (
-                        <div className="slot-lines">
-                          {slot.entries.map((entry) => (
-                            <div key={`${entry.batch}-${entry.subject}`}>
-                              {entry.batch ?? 'All'} · {entry.subject}
-                            </div>
-                          ))}
-                        </div>
-                      ) : (
-                        <div className="slot-subject">{slot.entries[0].subject}</div>
-                      )}
->>>>>>> 0fdf6c7d11b8aa812caec52d545c5a34a33976cd
                     </button>
                   )
                 })}
@@ -489,11 +467,7 @@ export default function TeacherDashboard(_props: TeacherDashboardProps) {
             )}
             <div className="modal-actions">
               <button
-<<<<<<< HEAD
                 className="btn btn-outline slot-modal-close"
-=======
-                className="btn btn-outline"
->>>>>>> 0fdf6c7d11b8aa812caec52d545c5a34a33976cd
                 onClick={() => setShowSessionPicker(false)}
                 type="button"
               >

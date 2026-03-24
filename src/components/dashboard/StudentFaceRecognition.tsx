@@ -82,11 +82,7 @@ export default function StudentFaceRecognition({
     if (!cameraReady || !modelsReady) return
     setLoading(true)
     try {
-<<<<<<< HEAD
-      setStatusMessage('Capturing 3 face samples. Hold still and look at the camera...')
-=======
       setStatusMessage('Capturing 7 face samples. Hold still and look at the camera...')
->>>>>>> 0fdf6c7d11b8aa812caec52d545c5a34a33976cd
       const captureTarget =
         canvasRef.current && videoRef.current
           ? (() => {
@@ -107,19 +103,11 @@ export default function StudentFaceRecognition({
             })()
           : videoRef.current
       const samples = captureTarget
-<<<<<<< HEAD
-        ? await collectFaceDescriptorSamples(captureTarget, 3, 6, 300)
-        : []
-      if (samples.length < 2) {
-        setStatusMessage('Unable to capture enough clear face samples. Improve lighting and retry.')
-        toast.error('No face detected. Please look at the camera.')
-=======
         ? await collectFaceDescriptorSamples(captureTarget, 7, 6, 300)
         : []
       if (samples.length < 3) {
         setStatusMessage('Unable to capture enough clear face samples. Improve lighting and retry.')
         toast.error('Not enough face samples captured. Please look at the camera.')
->>>>>>> 0fdf6c7d11b8aa812caec52d545c5a34a33976cd
         return
       }
       
@@ -160,33 +148,23 @@ export default function StudentFaceRecognition({
         return
       }
 
-<<<<<<< HEAD
-      // If frames are exactly identical (similarity > 0.99), it is likely a static photo spoof.
-=======
       // Liveness and anti-spoof check
->>>>>>> 0fdf6c7d11b8aa812caec52d545c5a34a33976cd
       const freshness = cosineSimilarityNormalized(
         Array.from(descriptor1),
         Array.from(descriptor2)
       )
-<<<<<<< HEAD
-=======
       
->>>>>>> 0fdf6c7d11b8aa812caec52d545c5a34a33976cd
       if (freshness > 0.99) {
         setStatusMessage('Liveness check failed. Static image detected.')
         toast.error('Spoof detected! Please blink or slightly move your head.')
         return
       }
-<<<<<<< HEAD
-=======
       
       if (freshness < 0.85) {
         setStatusMessage('Liveness check failed. Face changed too much.')
         toast.error('Movement too fast or face lost.')
         return
       }
->>>>>>> 0fdf6c7d11b8aa812caec52d545c5a34a33976cd
 
       const match = await matchFace(Array.from(descriptor1))
       

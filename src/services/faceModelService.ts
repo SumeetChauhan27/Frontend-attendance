@@ -50,10 +50,7 @@ export async function loadFaceModels(): Promise<void> {
 
 export async function extractFaceDescriptor(
   image: HTMLImageElement | HTMLVideoElement | HTMLCanvasElement,
-<<<<<<< HEAD
-=======
   checkQuality = false,
->>>>>>> 0fdf6c7d11b8aa812caec52d545c5a34a33976cd
 ): Promise<Float32Array | null> {
   if (!modelsLoaded) {
     throw new Error('Face models are not loaded. Call loadFaceModels() first.')
@@ -66,10 +63,6 @@ export async function extractFaceDescriptor(
 
   if (!detection) return null
 
-<<<<<<< HEAD
-  assertDescriptorLength(detection.descriptor)
-  return detection.descriptor
-=======
   if (checkQuality) {
     // Basic quality checks: box size
     const box = detection.detection.box
@@ -81,7 +74,6 @@ export async function extractFaceDescriptor(
   assertDescriptorLength(detection.descriptor)
   // Normalize descriptor immediately upon extraction
   return new Float32Array(normalize(Array.from(detection.descriptor)))
->>>>>>> 0fdf6c7d11b8aa812caec52d545c5a34a33976cd
 }
 
 export async function waitForVideoReady(video: HTMLVideoElement): Promise<void> {
@@ -115,21 +107,12 @@ export async function extractFaceDescriptorWithRetry(
   video: HTMLVideoElement | HTMLCanvasElement,
   attempts = 8,
   delayMs = 250,
-<<<<<<< HEAD
-=======
   checkQuality = false,
->>>>>>> 0fdf6c7d11b8aa812caec52d545c5a34a33976cd
 ): Promise<Float32Array | null> {
   if (video instanceof HTMLVideoElement) {
     await waitForVideoReady(video)
   }
 
-<<<<<<< HEAD
-  for (let index = 0; index < attempts; index += 1) {
-    const descriptor = await extractFaceDescriptor(video)
-    if (descriptor) {
-      return descriptor
-=======
   let lastError: Error | null = null
 
   for (let index = 0; index < attempts; index += 1) {
@@ -142,7 +125,6 @@ export async function extractFaceDescriptorWithRetry(
       if (err instanceof Error && err.message.includes('too far')) {
          lastError = err
       }
->>>>>>> 0fdf6c7d11b8aa812caec52d545c5a34a33976cd
     }
 
     if (index < attempts - 1) {
@@ -150,36 +132,19 @@ export async function extractFaceDescriptorWithRetry(
     }
   }
 
-<<<<<<< HEAD
-=======
   if (lastError) throw lastError
->>>>>>> 0fdf6c7d11b8aa812caec52d545c5a34a33976cd
   return null
 }
 
 export async function collectFaceDescriptorSamples(
   video: HTMLVideoElement | HTMLCanvasElement,
-<<<<<<< HEAD
-  sampleCount = 3,
-=======
   sampleCount = 7,
->>>>>>> 0fdf6c7d11b8aa812caec52d545c5a34a33976cd
   attemptsPerSample = 6,
   delayMs = 300,
 ): Promise<Float32Array[]> {
   const samples: Float32Array[] = []
 
   for (let index = 0; index < sampleCount; index += 1) {
-<<<<<<< HEAD
-    const descriptor = await extractFaceDescriptorWithRetry(video, attemptsPerSample, delayMs)
-    if (!descriptor) {
-      break
-    }
-    samples.push(descriptor)
-
-    if (index < sampleCount - 1) {
-      await new Promise((resolve) => window.setTimeout(resolve, 250))
-=======
     try {
       // Use strict quality checks during registration
       const descriptor = await extractFaceDescriptorWithRetry(video, attemptsPerSample, delayMs, true)
@@ -195,7 +160,6 @@ export async function collectFaceDescriptorSamples(
     if (index < sampleCount - 1) {
       // Pause to allow slight movement
       await new Promise((resolve) => window.setTimeout(resolve, 400))
->>>>>>> 0fdf6c7d11b8aa812caec52d545c5a34a33976cd
     }
   }
 
@@ -219,20 +183,13 @@ export function averageDescriptors(descriptors: Float32Array[]): Float32Array {
     total[index] /= descriptors.length
   }
 
-<<<<<<< HEAD
-  return total
-=======
   return new Float32Array(normalize(Array.from(total)))
->>>>>>> 0fdf6c7d11b8aa812caec52d545c5a34a33976cd
 }
 
 export interface StoredEmbedding {
   studentId: string
   embeddings: number[][]
-<<<<<<< HEAD
-=======
   averageEmbedding?: number[]
->>>>>>> 0fdf6c7d11b8aa812caec52d545c5a34a33976cd
 }
 
 export function toStoredEmbedding(
@@ -240,18 +197,12 @@ export function toStoredEmbedding(
   descriptors: Float32Array[],
 ): StoredEmbedding {
   descriptors.forEach(assertDescriptorLength)
-<<<<<<< HEAD
-  return {
-    studentId,
-    embeddings: descriptors.map(desc => Array.from(desc)),
-=======
   const average = averageDescriptors(descriptors)
   
   return {
     studentId,
     embeddings: descriptors.map(desc => Array.from(desc)),
     averageEmbedding: Array.from(average),
->>>>>>> 0fdf6c7d11b8aa812caec52d545c5a34a33976cd
   }
 }
 
@@ -275,39 +226,6 @@ export function cosineSimilarityNormalized(a: number[], b: number[]): number {
 export function findBestMatch(
   currentDescriptor: Float32Array,
   storedEmbeddings: StoredEmbedding[],
-<<<<<<< HEAD
-  threshold = 0.55,
-): { studentId: string | null; similarity: number } {
-  assertDescriptorLength(currentDescriptor)
-
-  if (storedEmbeddings.length === 0) {
-    return { studentId: null, similarity: 0 }
-  }
-
-  let bestStudentId: string | null = null
-  let bestSimilarity = 0
-  const current = Array.from(currentDescriptor)
-
-  for (const student of storedEmbeddings) {
-    if (!student.embeddings || !Array.isArray(student.embeddings)) continue
-
-    for (const emb of student.embeddings) {
-      if (!emb || emb.length !== DESCRIPTOR_LENGTH) continue
-      
-      const similarity = cosineSimilarityNormalized(current, emb)
-      if (similarity > bestSimilarity) {
-        bestSimilarity = similarity
-        bestStudentId = student.studentId
-      }
-    }
-  }
-
-  if (bestSimilarity >= threshold) {
-    return { studentId: bestStudentId, similarity: bestSimilarity }
-  }
-
-  return { studentId: null, similarity: bestSimilarity }
-=======
   threshold = 0.65,
 ): { studentId: string | null; similarity: number; status: 'accepted'|'retry'|'rejected' } {
   assertDescriptorLength(currentDescriptor)
@@ -367,5 +285,4 @@ export function findBestMatch(
     similarity: bestMatch.score,
     status
   }
->>>>>>> 0fdf6c7d11b8aa812caec52d545c5a34a33976cd
 }

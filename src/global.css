@@ -2375,7 +2375,6 @@ textarea {
   color: var(--text-muted);
 }
 
-<<<<<<< HEAD
 /* ── Slot Modal ─────────────────────────────────────────── */
 .slot-modal {
   width: min(36rem, 100%);
@@ -2432,26 +2431,10 @@ textarea {
   max-height: 24rem;
   overflow-y: auto;
   padding: 1rem 1.5rem;
-=======
-.slot-modal {
-  width: min(34rem, 100%);
-}
-
-.slot-grid {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  gap: 0.5rem;
-}
-
-.slot-grid.modal-grid {
-  max-height: 22rem;
-  overflow-y: auto;
->>>>>>> 0fdf6c7d11b8aa812caec52d545c5a34a33976cd
 }
 
 .slot-card {
   border: 1px solid var(--border);
-<<<<<<< HEAD
   border-radius: 0.75rem;
   background: var(--surface-muted);
   padding: 0.875rem;
@@ -2598,43 +2581,7 @@ textarea {
   justify-content: center;
   font-weight: 600;
   padding: 0.625rem 1rem;
-=======
-  border-radius: var(--radius);
-  background: var(--surface-muted);
-  padding: 0.625rem;
-  text-align: left;
-  cursor: pointer;
-  transition: transform var(--transition), border-color var(--transition), background var(--transition);
-}
 
-.slot-card:hover {
-  transform: translateY(-0.0625rem);
-  border-color: #cfd3e6;
-  background: #f3f4fa;
-}
-
-.slot-card.active {
-  border-color: #a9adc8;
-  background: var(--primary-100);
-}
-
-.slot-time {
-  margin-bottom: 0.25rem;
-  font-size: 0.6875rem;
-  font-weight: 600;
-  color: var(--text-body);
-}
-
-.slot-subject,
-.slot-lines {
-  font-size: 0.75rem;
-  color: var(--text-primary);
-}
-
-.slot-lines {
-  display: grid;
-  gap: 0.1875rem;
->>>>>>> 0fdf6c7d11b8aa812caec52d545c5a34a33976cd
 }
 
 .form-grid {
@@ -2712,21 +2659,13 @@ textarea {
 .teacher-page .management-menu-link.active,
 .teacher-page .attendance-tab.active,
 .teacher-page .day-btn.active,
-<<<<<<< HEAD
 .student-page .attendance-tab.active,
 .student-page .day-btn.active {
-=======
-.teacher-page .slot-card.active,
-.student-page .attendance-tab.active,
-.student-page .day-btn.active,
-.student-page .slot-card.active {
->>>>>>> 0fdf6c7d11b8aa812caec52d545c5a34a33976cd
   background: rgba(255, 255, 255, 0.18);
   border-color: rgba(255, 255, 255, 0.22);
   color: #fff;
 }
 
-<<<<<<< HEAD
 .teacher-page .slot-card.active,
 .student-page .slot-card.active {
   background: rgba(99, 102, 241, 0.18);
@@ -2735,8 +2674,6 @@ textarea {
   color: #fff;
 }
 
-=======
->>>>>>> 0fdf6c7d11b8aa812caec52d545c5a34a33976cd
 .teacher-page .teacher-context-card,
 .teacher-page .management-menu-card,
 .teacher-page .teacher-session-card,
@@ -2958,17 +2895,9 @@ textarea {
 .teacher-page .teacher-picker-btn:hover,
 .teacher-page .icon-btn:hover,
 .teacher-page .day-btn:hover,
-<<<<<<< HEAD
 .student-page .attendance-tab:hover,
 .student-page .icon-btn:hover,
 .student-page .day-btn:hover {
-=======
-.teacher-page .slot-card:hover,
-.student-page .attendance-tab:hover,
-.student-page .icon-btn:hover,
-.student-page .day-btn:hover,
-.student-page .slot-card:hover {
->>>>>>> 0fdf6c7d11b8aa812caec52d545c5a34a33976cd
   background: rgba(255, 255, 255, 0.12);
   border-color: rgba(255, 255, 255, 0.2);
 }
@@ -3048,35 +2977,7 @@ textarea {
 .student-page .slot-modal-close:hover {
   background: rgba(255, 255, 255, 0.12);
   border-color: rgba(255, 255, 255, 0.2);
-=======
-.teacher-page .modal .slot-time,
-.student-page .modal .slot-time {
-  color: var(--app-text-soft);
-}
 
-.teacher-page .modal .slot-subject,
-.teacher-page .modal .slot-lines,
-.student-page .modal .slot-subject,
-.student-page .modal .slot-lines {
-  color: var(--app-text);
-}
-
-.teacher-page .modal .muted,
-.student-page .modal .muted {
-  color: var(--app-text-muted);
-}
-
-.teacher-page .modal .btn-outline,
-.student-page .modal .btn-outline {
-  background: rgba(255, 255, 255, 0.08);
-  border-color: rgba(255, 255, 255, 0.18);
-  color: var(--app-text);
-}
-
-.teacher-page .modal .btn-outline:hover,
-.student-page .modal .btn-outline:hover {
-  background: rgba(255, 255, 255, 0.16);
->>>>>>> 0fdf6c7d11b8aa812caec52d545c5a34a33976cd
 }
 
 .student-page .student-logout-btn {
@@ -3411,7 +3312,6 @@ textarea {
   .management-menu-card {
     position: static;
   }
-<<<<<<< HEAD
 
   .spreadsheet-card {
     padding: 1rem;
@@ -3459,8 +3359,6 @@ textarea {
   .management-page-stack {
     gap: 1rem;
   }
-=======
->>>>>>> 0fdf6c7d11b8aa812caec52d545c5a34a33976cd
 }
 
 @media (min-width: 64rem) {
