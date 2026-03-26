@@ -2227,13 +2227,16 @@ textarea {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
+  z-index: 61;
   width: min(27.5rem, 100%);
+  max-width: calc(100vw - 3rem);
+  max-height: min(90vh, 52rem);
+  overflow-y: auto;
   border: 1px solid var(--border);
   border-radius: 1rem;
   background: rgba(255, 255, 255, 0.95);
   box-shadow: 0 1rem 2.25rem rgba(15, 23, 42, 0.16);
   padding: 1.25rem;
-  max-width: calc(100vw - 3rem);
 }
 
 .modal h4 {
@@ -2379,7 +2382,7 @@ textarea {
 .slot-modal {
   width: min(36rem, 100%);
   padding: 0;
-  overflow: hidden;
+  overflow-y: auto;
 }
 
 .slot-modal h4 {
@@ -2902,7 +2905,7 @@ textarea {
   border-color: rgba(255, 255, 255, 0.2);
 }
 
-<<<<<<< HEAD
+
 .teacher-page .slot-card:hover,
 .student-page .slot-card:hover {
   background: rgba(255, 255, 255, 0.14);
