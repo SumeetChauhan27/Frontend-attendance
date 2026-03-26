@@ -4,6 +4,7 @@ import {
   listAttendance,
   listStudentsWithAttendance,
   markTeacherFaceAttendance,
+  markTeacherManualAttendance,
   markStudentAttendance,
   type AttendanceRecord,
   type SessionRecord,
@@ -23,6 +24,12 @@ export const markTeacherAttendanceByFace = async (payload: {
   studentId: string
   sessionId: string
 }) => markTeacherFaceAttendance(payload)
+
+export const markTeacherAttendanceManually = async (payload: {
+  studentId: string
+  sessionId: string
+  present: boolean
+}) => markTeacherManualAttendance(payload)
 
 export const fetchAttendanceStats = async (classId = ''): Promise<StudentWithAttendance[]> =>
   classId ? listStudentsWithAttendance(classId) : []

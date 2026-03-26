@@ -3,8 +3,9 @@ import type { AttendanceRecord, StudentWithAttendance } from '../../api'
 import { SessionStatus, type SessionStatus as SessionStatusValue } from '../../sessionLifecycle'
 import FaceAttendancePanel from './FaceAttendancePanel'
 import QRGenerator from './QRGenerator'
+import ManualAttendancePanel from './ManualAttendancePanel'
 
-type TabType = 'QR' | 'FACE'
+type TabType = 'QR' | 'FACE' | 'MANUAL'
 
 type AttendanceTabsProps = {
   sessionStatus: SessionStatusValue
@@ -40,6 +41,17 @@ export default function AttendanceTabs({
           classId={classId}
           subject={subject}
           room={room}
+        />
+      )
+    }
+    if (activeTab === 'MANUAL') {
+      return (
+        <ManualAttendancePanel
+          isAttendanceEnabled={isAttendanceEnabled}
+          sessionId={sessionId}
+          students={students}
+          attendance={attendance}
+          onAttendanceMarked={onFaceAttendanceMarked}
         />
       )
     }
@@ -82,6 +94,13 @@ export default function AttendanceTabs({
           onClick={() => setActiveTab('FACE')}
         >
           Face
+        </button>
+        <button
+          type="button"
+          className={`attendance-tab ${activeTab === 'MANUAL' ? 'active' : ''}`}
+          onClick={() => setActiveTab('MANUAL')}
+        >
+          Manual
         </button>
       </div>
       <div className="attendance-tab-panel">{content}</div>

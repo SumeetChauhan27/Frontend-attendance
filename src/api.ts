@@ -341,6 +341,19 @@ export const markTeacherFaceAttendance = async (payload: {
   return toJson(res)
 }
 
+export const markTeacherManualAttendance = async (payload: {
+  studentId: string
+  sessionId: string
+  present: boolean
+}): Promise<AttendanceRecord> => {
+  const res = await fetch(`${apiBase}/api/teachers/attendance/manual`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...authHeader() },
+    body: JSON.stringify(payload),
+  })
+  return toJson(res)
+}
+
 export const getStudentAttendanceHistory = async (): Promise<
   StudentAttendanceSummary[]
 > => {
