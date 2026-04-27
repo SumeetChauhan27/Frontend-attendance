@@ -348,8 +348,12 @@ export default function StudentSpreadsheet({
         </div>
       ) : null}
 
-      <div className="spreadsheet-table-wrap student-records-scroll">
-        <table className="spreadsheet-table">
+      <div
+        className="spreadsheet-table-wrap student-records-scroll"
+        // Inline style guarantees scroll on mobile regardless of CSS specificity
+        style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch' as const }}
+      >
+        <table className="spreadsheet-table" style={{ minWidth: '640px' }}>
           <thead>
             <tr>
               <th>ID</th>
