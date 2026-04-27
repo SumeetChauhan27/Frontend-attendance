@@ -89,12 +89,17 @@ export default function StudentFaceRegistration({
         return
       }
 
+      // Extract embeddings + averageEmbedding from the stored embedding object
+      // and send them separately — never send the whole object as faceEmbedding
+      // (that's what caused the weird {studentId, embeddings} format in Sheets)
+      const stored = toStoredEmbedding(studentId, samples)
+
       await updateSpreadsheetStudent(studentId, {
         name: studentName,
         rollNumber,
         department,
         year,
-        faceEmbedding: toStoredEmbedding(studentId, samples) as any, // backend expects JSON string or array, it will stringify the object
+        faceEmbedding: stored.embeddings, // save only the array of sample vectors
       })
 
       await onSaved()
