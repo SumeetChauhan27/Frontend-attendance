@@ -59,9 +59,10 @@ export default function ManualAttendancePanel({
                   alignItems: 'center',
                   justifyContent: 'space-between',
                   padding: '0.75rem',
-                  border: '1px solid var(--border)',
+                  border: `1px solid ${isPresent ? 'var(--success-300, #86efac)' : 'var(--border)'}`,
                   borderRadius: 'var(--radius)',
-                  background: 'var(--surface)'
+                  background: isPresent ? 'var(--success-50, #f0fdf4)' : 'var(--surface)',
+                  transition: 'background 0.2s, border-color 0.2s',
                 }}
               >
                 <div>
@@ -69,28 +70,38 @@ export default function ManualAttendancePanel({
                   <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Roll: {student.roll}</div>
                 </div>
                 <div style={{ display: 'flex', gap: '0.5rem' }}>
+                  {/* Present button — highlighted green when student is present */}
                   <button
                     type="button"
                     className="btn btn-sm"
                     disabled={!isAttendanceEnabled || isProcessing || isPresent}
                     onClick={() => void handleMark(student.id, true)}
                     style={{
-                      backgroundColor: isPresent ? 'var(--success-100)' : 'var(--surface-muted)',
-                      color: isPresent ? 'var(--success-600)' : 'var(--text-primary)',
-                      borderColor: isPresent ? 'var(--success-600)' : 'var(--border)'
+                      backgroundColor: isPresent ? 'var(--success-500, #22c55e)' : 'var(--surface-muted)',
+                      color: isPresent ? '#fff' : 'var(--text-primary)',
+                      borderColor: isPresent ? 'var(--success-600, #16a34a)' : 'var(--border)',
+                      fontWeight: isPresent ? 700 : 400,
                     }}
                   >
                     {isProcessing && !isPresent ? '...' : 'Present'}
                   </button>
+
+                  {/* Absent button — always red/danger highlighted when student is absent,
+                      also enabled for present students so teacher can override QR attendance */}
                   <button
                     type="button"
                     className="btn btn-sm"
-                    disabled={!isAttendanceEnabled || isProcessing || !isPresent}
+                    disabled={!isAttendanceEnabled || isProcessing}
                     onClick={() => void handleMark(student.id, false)}
                     style={{
-                      backgroundColor: !isPresent && attendance.length > 0 ? 'var(--danger-100)' : 'var(--surface-muted)',
-                      color: !isPresent && attendance.length > 0 ? 'var(--danger-600)' : 'var(--text-primary)',
-                      borderColor: !isPresent && attendance.length > 0 ? 'var(--danger-600)' : 'var(--border)'
+                      backgroundColor: !isPresent
+                        ? 'var(--danger-500, #ef4444)'
+                        : 'var(--surface-muted)',
+                      color: !isPresent ? '#fff' : 'var(--text-muted)',
+                      borderColor: !isPresent
+                        ? 'var(--danger-600, #dc2626)'
+                        : 'var(--border)',
+                      fontWeight: !isPresent ? 700 : 400,
                     }}
                   >
                     {isProcessing && isPresent ? '...' : 'Absent'}
@@ -98,6 +109,7 @@ export default function ManualAttendancePanel({
                 </div>
               </div>
             )
+
           })}
         </div>
       )}

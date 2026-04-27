@@ -21,6 +21,7 @@ import {
   openAttendanceSession,
   syncActiveSession,
 } from '../services/attendanceService'
+
 import {
   listClassrooms,
   listSpreadsheetStudents,
@@ -145,6 +146,20 @@ export default function TeacherDashboard(_props: TeacherDashboardProps) {
     if (!sessionDate) return
     setManualDay(toDayName(sessionDate))
   }, [sessionDate])
+
+  // ── Real-time attendance polling ────────────────────────────────────────────
+  // Refreshes attendance every 8 s while a session is active so Quick Stats
+  // and the Manual panel reflect QR / face check-ins without a manual reload.
+  useEffect(() => {
+    if (session.status !== SessionStatus.ACTIVE || !session.id) return
+    const id = setInterval(() => {
+      fetchSessionAttendance(session.id)
+        .then(setAttendance)
+        .catch(() => { /* silent — network blip should not crash the UI */ })
+    }, 8_000)
+    return () => clearInterval(id)
+  }, [session.status, session.id])
+  // ───────────────────────────────────────────────────────────────────────────
 
   useEffect(() => {
     const baseDate = makeDateFromDayTime(manualDay, manualTime)
