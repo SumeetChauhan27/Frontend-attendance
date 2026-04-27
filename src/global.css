@@ -3335,32 +3335,31 @@ textarea {
     width: 100%;
   }
 
-  /* ── Table: full-bleed horizontal scroll on mobile ── */
+  /* ── Table: horizontal scroll inside body bounds ── */
+  /* NOTE: do NOT use negative margins here — body has overflow-x:hidden which
+     clips anything that extends beyond its boundary and breaks scroll. */
   .spreadsheet-table-wrap,
   .student-records-scroll {
-    /* Bleed to card edges, scroll inside */
-    margin-left: -1rem;
-    margin-right: -1rem;
-    width: calc(100% + 2rem);
+    margin-left: 0;
+    margin-right: 0;
+    width: 100%;
     overflow-x: auto;
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
-    /* Restore horizontal padding via scroll padding so content doesn't hug edges */
-    padding-left: 0;
-    padding-right: 0;
-    /* Prevent scroll bleeding from being clipped by a parent */
+    /* Slightly tighten the card padding so more table is visible */
+    padding: 0;
     position: relative;
   }
 
   .spreadsheet-table {
-    min-width: 40rem; /* narrower min so it fits on small phones with less empty space */
-    width: max-content;
+    /* Use px so this is always wider than any mobile viewport */
+    min-width: 640px;
   }
 
   .spreadsheet-table th,
   .spreadsheet-table td {
-    padding: 0.6rem 0.5rem;
-    font-size: 0.75rem;
+    padding: 0.5rem 0.4rem;
+    font-size: 0.72rem;
     white-space: nowrap;
   }
 
