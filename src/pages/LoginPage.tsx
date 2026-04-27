@@ -119,12 +119,7 @@ export default function LoginPage({ isSubmitting, onLogin }: LoginPageProps) {
               />
             </div>
             <div className="form-group">
-              <div className="login-password-row">
-                <label htmlFor="login-password">Password</label>
-                <button type="button" className="link-btn subtle login-forgot-btn">
-                  Forgot?
-                </button>
-              </div>
+              <label htmlFor="login-password">Password</label>
               <input
                 id="login-password"
                 type="password"

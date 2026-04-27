@@ -10,6 +10,7 @@ export default function TeacherRegistration({
   compact = false,
 }: TeacherRegistrationProps) {
   const [form, setForm] = useState({
+    id: '',
     name: '',
     email: '',
     password: '',
@@ -27,6 +28,7 @@ export default function TeacherRegistration({
     setSubmitting(true)
     try {
       const teacher = await submitTeacherRegistration({
+        id: form.id.trim() || undefined,
         name: form.name.trim(),
         email: form.email.trim(),
         password: form.password,
@@ -34,6 +36,7 @@ export default function TeacherRegistration({
       })
       setRegisteredId(teacher.id)
       setForm({
+        id: '',
         name: '',
         email: '',
         password: '',
@@ -58,6 +61,15 @@ export default function TeacherRegistration({
           </div>
 
           <div className="registration-modal-body">
+            <div className="form-group">
+              <label htmlFor="teacher-id">Teacher ID <span style={{opacity:0.5, fontSize:'0.8em'}}>(optional — auto-generated if blank)</span></label>
+              <input
+                id="teacher-id"
+                value={form.id}
+                onChange={(event) => setForm((previous) => ({ ...previous, id: event.target.value }))}
+                placeholder="e.g. prof_sharma (leave blank to auto-generate)"
+              />
+            </div>
             <div className="form-group">
               <label htmlFor="teacher-name">Name</label>
               <input
@@ -129,6 +141,15 @@ export default function TeacherRegistration({
           </div>
 
           <div className="form-grid registration-grid">
+            <div className="form-group">
+              <label htmlFor="teacher-id-full">Teacher ID <span style={{opacity:0.5, fontSize:'0.8em'}}>(optional)</span></label>
+              <input
+                id="teacher-id-full"
+                value={form.id}
+                onChange={(event) => setForm((previous) => ({ ...previous, id: event.target.value }))}
+                placeholder="e.g. prof_sharma (leave blank to auto-generate)"
+              />
+            </div>
             <div className="form-group">
               <label htmlFor="teacher-name">Name</label>
               <input

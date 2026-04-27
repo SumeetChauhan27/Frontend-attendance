@@ -419,6 +419,7 @@ export const getSystemActivity = async (): Promise<SystemActivity> => {
 }
 
 export const registerTeacherAccount = async (payload: {
+  id?: string
   name: string
   email: string
   password: string

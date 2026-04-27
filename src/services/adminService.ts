@@ -17,6 +17,7 @@ export const fetchSystemActivity = async (): Promise<SystemActivity> =>
   getSystemActivity()
 
 export const submitTeacherRegistration = async (payload: {
+  id?: string
   name: string
   email: string
   password: string
