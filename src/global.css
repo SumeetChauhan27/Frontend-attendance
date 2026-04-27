@@ -3335,19 +3335,26 @@ textarea {
     width: 100%;
   }
 
+  /* ── Table: full-bleed horizontal scroll on mobile ── */
   .spreadsheet-table-wrap,
   .student-records-scroll {
+    /* Bleed to card edges, scroll inside */
     margin-left: -1rem;
     margin-right: -1rem;
-    padding-left: 0;
-    padding-right: 0;
     width: calc(100% + 2rem);
     overflow-x: auto;
+    overflow-y: auto;
     -webkit-overflow-scrolling: touch;
+    /* Restore horizontal padding via scroll padding so content doesn't hug edges */
+    padding-left: 0;
+    padding-right: 0;
+    /* Prevent scroll bleeding from being clipped by a parent */
+    position: relative;
   }
 
   .spreadsheet-table {
-    min-width: 52rem;
+    min-width: 40rem; /* narrower min so it fits on small phones with less empty space */
+    width: max-content;
   }
 
   .spreadsheet-table th,
@@ -3367,6 +3374,30 @@ textarea {
 
   .management-page-stack {
     gap: 1rem;
+  }
+
+  /* ── Face registration modal: vertical on mobile ── */
+  .face-registration-modal {
+    width: calc(100vw - 1.5rem) !important;
+    max-width: calc(100vw - 1.5rem) !important;
+    padding: 1rem !important;
+    max-height: 92svh !important;
+    overflow-y: auto !important;
+  }
+
+  .face-student-video {
+    height: min(16rem, 38vh);
+  }
+
+  /* Stack camera buttons vertically, full width */
+  .face-student-actions {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .face-student-actions .btn {
+    width: 100%;
+    justify-content: center;
   }
 }
 
